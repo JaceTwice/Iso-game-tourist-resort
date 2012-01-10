@@ -1,4 +1,9 @@
 // Game class for example 14
+var Buildings = {
+	GRASS: 0,
+	ICECREAM: 1
+	}
+
 function Game(canvas, game, gridSizeW, gridSizeH) {
 	this.started = true;
 	this.gameContainer = game;
@@ -30,6 +35,10 @@ function Game(canvas, game, gridSizeW, gridSizeH) {
 	// Tile texture
 	this.tile = new Image();
 	this.tile.src = "../img/tile.png";
+	
+	// Building texture
+	this.building = new Image();
+	this.building.src = "../img/icecream.png";
 
 	// Grid dimensions
 	this.grid = {
@@ -66,6 +75,15 @@ function Game(canvas, game, gridSizeW, gridSizeH) {
 	this.scrollPosition.y -= (this.grid.height * this.zoomHelper.level) + this.scrollPosition.y;
 	this.scrollPosition.x -= (this.grid.width * this.zoomHelper.level) + this.scrollPosition.x;
 
+	// Fill tile map with Grass tiles
+	for (var i = 0; i < this.grid.width; i++){
+		yPos = new Array;
+		this.tileMap[i] = yPos;
+		for (var j = 0; j < this.grid.height; j++){			
+			this.tileMap[i][j] = Buildings.GRASS;
+		}
+	}
+	
 	this.doResize();
 	this.draw();
 }
@@ -174,8 +192,15 @@ Game.prototype.handleMouseDown = function(e) {
 	}
 
 	switch (Tools.current) {
-		case Tools.BUILD:
+		case Tools.SELECT:
             
+			var pos = this.translatePixelsToMatrix(x, y);
+			alert("for tile "+ pos.row + "," + pos.col + " status is: " + this.tileMap[pos.row][pos.col]);
+			if (this.tileMap[pos.row][pos.col] != Buildings.ICECREAM) {
+				this.tileMap[pos.row][pos.col] = Buildings.ICECREAM;
+				alert("for tile "+ pos.row + "," + pos.col + " change is: " + this.tileMap[pos.row][pos.col]);
+			}
+			
 			break;
 		case Tools.MOVE:
 			this.dragHelper.active = true;
@@ -191,9 +216,10 @@ Game.prototype.handleMouseDown = function(e) {
 		case Tools.DEMOLISH:
 			
 			var pos = this.translatePixelsToMatrix(x, y);
-
-			if (this.tileMap[pos.row] != undefined && this.tileMap[pos.row][pos.col] != undefined) {
-				this.tileMap[pos.row][pos.col] = null;
+			alert("for tile "+ pos.row + "," + pos.col + " status is: " + this.tileMap[pos.row][pos.col]);
+			if (this.tileMap[pos.row][pos.col] != Buildings.GRASS) {
+				this.tileMap[pos.row][pos.col] = Buildings.GRASS;
+				alert("for tile "+ pos.row + "," + pos.col + " change is: " + this.tileMap[pos.row][pos.col]);
 			}
 
 			break;
@@ -265,20 +291,37 @@ Game.prototype.draw = function(srcX, srcY, destX, destY) {
 			xpos += (this.canvas.width / 2) - ((tileWidth / 2) * this.zoomHelper.level) + this.scrollPosition.x;
 
 			var ypos = (row + col) * (tileHeight / 2) + (this.grid.height * this.zoomHelper.level) + this.scrollPosition.y;
-
-			if (this.tileMap[row] != null && this.tileMap[row][col] != null) {
-				// Place building
-			} else {
+			
+			/*if (Math.round(xpos) + tileWidth >= srcX &&
+					Math.round(ypos) + tileHeight >= srcY &&
+					Math.round(xpos) <= destX &&
+					Math.round(ypos) <= destY) 
+					{
+						this.c.drawImage(this.tile, Math.round(xpos), Math.round(ypos), tileWidth, tileHeight);
+					}*/
+					
+			switch (this.tileMap[row][col]){
+				case Building.GRASS:
 				if (Math.round(xpos) + tileWidth >= srcX &&
 					Math.round(ypos) + tileHeight >= srcY &&
 					Math.round(xpos) <= destX &&
-					Math.round(ypos) <= destY) {
-
-					this.c.drawImage(this.tile, Math.round(xpos), Math.round(ypos), tileWidth, tileHeight);	
-
-				}
+					Math.round(ypos) <= destY) 
+					{
+						this.c.drawImage(this.tile, Math.round(xpos), Math.round(ypos), tileWidth, tileHeight);
+					}
+					alert(this.tileMap[row][col] + " is " + row + "," + col);
+					break;
+				case Building.ICECREAM:
+					if (Math.round(xpos) + tileWidth >= srcX &&
+					Math.round(ypos) + tileHeight >= srcY &&
+					Math.round(xpos) <= destX &&
+					Math.round(ypos) <= destY) 
+					{
+						this.c.drawImage(this.building, Math.round(xpos), Math.round(ypos), tileWidth, tileHeight);
+					}
+					alert(this.tileMap[row][col] + " is " + row + "," + col);
+					break;
 			}
-
 		}
 	}
 }
